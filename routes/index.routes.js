@@ -17,6 +17,21 @@ router.get("/", async (req, res) => {
 
 
 });
+router.get("/book/:id", async (req, res) => {
+  
+
+
+  try {
+         const book=await Book.findById(req.params.id)
+ 
+         return res.status(201).json({ book });
+
+  } catch (error) {
+   return res.status(500).json({ message: error });
+  }
+
+
+});
 //search
 router.get("/search/:searchString", async (req, res) => {
   
