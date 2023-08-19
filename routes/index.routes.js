@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const fileUploader = require("../config/cloudinary.config");
 const Book = require("../models/Book.model");
+const Like= require("../models/Like.model");
 const { isAuthenticated } = require("../middlewares/jwt.middleware"); 
 
 
@@ -111,5 +112,56 @@ try {
   return res.status(500).json({ message: error });
 }
    
+});
+
+
+router.post("/book/like/:id", async (req, res) => {
+  
+const payload={...req.body}
+
+  try {
+         const foundLike=await Like.find({book: req.params.id, booklovers: payload.userid})
+      
+         if(foundLike.length>0){
+           let like=false
+            //update like
+            if(foundLike[0].like===false){
+              like=true
+            }
+            else{
+              like=false
+            }
+           console.log(foundLike[0])
+       const updatedLike= await Like.findByIdAndUpdate(foundLike[0]._id, { like}, {new: true})
+            return res.status(201).json({ updatedLike });
+         }
+         else{
+       const newLike=   await Like.create({like: true, book: req.params.id, booklovers: payload.userid })
+       console.log(newLike)
+       return res.status(201).json({ newLike });
+         }
+     
+       
+
+  } catch (error) {
+   return res.status(500).json({ message: error });
+  }
+
+
+});
+router.get("/like/:id", async (req, res) => {
+  
+
+
+  try {
+         const likes=await Like.find({book: req.params.id, like: true})
+ 
+         return res.status(201).json({ likes });
+
+  } catch (error) {
+   return res.status(500).json({ message: error });
+  }
+
+
 });
 module.exports = router;
