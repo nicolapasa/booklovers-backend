@@ -78,4 +78,38 @@ try {
    
 });
 
+
+router.put("/book/:id", fileUploader.single('image'), async(req, res) => {
+  
+  
+  const payload = { ...req.body }
+
+if (req.file) {
+   payload.image = req.file.path;
+}
+else{
+  delete payload.image;
+}
+
+try {
+  const response=await Book.findByIdAndUpdate(req.params.id, payload)
+  return res.status(201).json({ message: "Book Updated" });
+} catch (error) {
+  return res.status(500).json({ message: error });
+}
+   
+});
+
+
+router.delete("/book/:id",  async(req, res) => {
+  
+
+try {
+  const response=await Book.findByIdAndDelete(req.params.id)
+  return res.status(201).json({ message: "Book deleted" });
+} catch (error) {
+  return res.status(500).json({ message: error });
+}
+   
+});
 module.exports = router;
