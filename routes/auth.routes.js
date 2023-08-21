@@ -4,6 +4,9 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middlewares/jwt.middleware"); // <== IMPORT
 const fileUploader = require("../config/cloudinary.config");
+
+
+
 router.post("/signup", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -117,5 +120,61 @@ router.post("/login", async (req, res) => {
 
 
   })
+
+
+  router.post("/changePassword/:id", async (req, res) => {
+    try {
+        const { newPassword, confirmPassword } = req.body;
+    
+        if (newPassword === ""  || confirmPassword === "") {
+          return res
+            .status(400)
+            .json({ message: "Provide new password " });
+        }
+        if (newPassword != confirmPassword ) {
+          return res
+            .status(400)
+            .json({ message: "Passwords don't matches" });
+        }
+    
+    
+        //REGEX for password
+        const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+        if (!passwordRegex.test(newPassword)) {
+          return res.status(400).json({
+            message:
+              "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
+          });
+        }
+        const passwordRegexConfirm = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+        if (!passwordRegexConfirm.test(confirmPassword)) {
+          return res.status(400).json({
+            message:
+              "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
+          });
+        }
+        // Check if user with same username exists
+        const foundUser = await User.findById(req.params.id);
+        if (!foundUser) {
+          return res.status(400).json({ message: "User not found" });
+        }
+
+        const salt = bcrypt.genSaltSync(13);
+        const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    
+        //Create new user in database
+        await User.findByIdAndUpdate(req.params.id, {
+          password: hashedPassword,
+        });
+    
+        //New object without password
+        return res.status(201).json({ message: "password updated" });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+});
+
+
 
   module.exports = router;
