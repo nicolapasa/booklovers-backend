@@ -18,6 +18,8 @@ router.get("/", async (req, res) => {
 
 
 });
+
+//get single book
 router.get("/book/:id", async (req, res) => {
   
 
@@ -33,6 +35,25 @@ router.get("/book/:id", async (req, res) => {
 
 
 });
+//get favourite books
+router.get("/books/:userid", async (req, res) => {
+  
+
+
+  try {
+    
+         const likeBooks=await Like.find({booklovers: req.params.userid, like: true}).populate('book')
+        // console.log(likeBooks)
+  
+         return res.status(201).json({ likeBooks });
+
+  } catch (error) {
+   return res.status(500).json({ message: error });
+  }
+
+
+});
+
 //search
 router.get("/search/:searchString", async (req, res) => {
   

@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middlewares/jwt.middleware"); // <== IMPORT
-
+const fileUploader = require("../config/cloudinary.config");
 router.post("/signup", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -96,5 +96,26 @@ router.post("/login", async (req, res) => {
     res.status(200).json({ message: "Token is valid", currentUser });
   });
 
+
+  router.post('/upload/:id', fileUploader.single('image'), async (req, res)=>{
+           
+    const payload={...req.body}
+    if (req.file) {
+      payload.image = req.file.path;
+   }
+   else{
+     delete payload.image;
+   }
+   try {
+    await User.findByIdAndUpdate(req.params.id, payload);
+    res.status(200).json({ message: "Upload success" });
+   } catch (error) {
+    res.status(500).json({ message: error });
+   }
+  
+
+
+
+  })
 
   module.exports = router;
